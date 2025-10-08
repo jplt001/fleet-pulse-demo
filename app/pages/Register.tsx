@@ -18,6 +18,14 @@ export default function RegisterPage() {
 	const [businessName, setBusinessName] = useState('');
 	const [notice, setNotice] = useState('');
 	const [success, setSuccess] = useState(false);
+	const clearFields = () => {
+		setFirstName('');
+		setLastName('');
+		setEmail('');
+		setPassword('');
+		setAccountType('individual');
+		setBusinessName('');
+	};
 
 	const onSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -26,10 +34,10 @@ export default function RegisterPage() {
 			return;
 		}
 		const res = await dispatch<any>(signUpWithEmail({ email, password, firstName, lastName, accountType, businessName: accountType==='business' ? businessName : undefined }));
-		if (res?.payload?.session) {
+		if (!res.error) {
 			setSuccess(true);
-			setTimeout(() => navigate('/dashboard'), 1200);
-		} else if (!res.error) {
+			clearFields();
+			setTimeout(() => navigate('/login'), 1200);
 			setNotice('Check your email to confirm your account, then log in.');
 		}
 	};
@@ -108,11 +116,11 @@ export default function RegisterPage() {
 							<svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
 						</div>
 						<h2 className="mt-4 text-xl font-bold">Account created</h2>
-						<p className="mt-1 text-white/80">Redirecting to your dashboard…</p>
+						<p className="mt-1 text-white/80">Redirecting to login…</p>
 						<div className="mt-4 h-1 w-full bg-white/20 rounded-full overflow-hidden">
 							<div className="h-full w-0 bg-white animate-[loadBar_1.1s_linear_forwards]" />
 						</div>
-						<button onClick={() => navigate('/dashboard')} className="mt-4 px-4 py-2 rounded-xl bg-white text-black hover:bg-black/10 transition">Continue now</button>
+						<button onClick={() => navigate('/login')} className="mt-4 px-4 py-2 rounded-xl bg-white text-black hover:bg-black/10 transition">Continue now</button>
 						<div className="absolute -z-10 inset-0 overflow-hidden pointer-events-none">
 							<div className="absolute left-1/2 top-0 -translate-x-1/2 w-[40rem] h-[40rem] rounded-full bg-gradient-to-tr from-teal-500/30 to-blue-600/30 blur-3xl animate-pulse" />
 							{/* simple sparkles */}
