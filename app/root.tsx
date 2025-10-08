@@ -6,6 +6,11 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { Provider } from "react-redux";
+import { useEffect } from "react";
+import AuthService from "./services/AuthService";
+import { setSession } from "./store/slices/authSlice";
+import store from "./store";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -41,8 +46,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function SessionSync() {
+  // keep Redux auth state in sync with Supabase
+  useEffect(() => {
+    // hydrate current session on first load
+    (async () => {
+      const supa = AuthService.getInstance();
+      const client: any = (supa as any);
+      const anyClient = (client && (client as any));
+      try {
+        const mod = await import("../design/supabaseClient");
+        const sb = mod.getSupabaseClient();
+        const { data } = await sb.auth.getSession();
+        store.dispatch(setSession({ user: (data.session?.user as any) || null, session: data.session }));
+      } catch {}
+    })();
+
+    const unsubscribe = AuthService.getInstance().onAuthStateChange((payload) => {
+      store.dispatch(setSession(payload));
+    });
+    return () => unsubscribe();
+  }, []);
   return <Outlet />;
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <SessionSync />
+    </Provider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
